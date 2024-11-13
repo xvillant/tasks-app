@@ -1,6 +1,6 @@
 import TaskForm from "@/components/task-form";
 import TasksList from "@/components/tasks-list";
-import Pagination from "@/components/pagintaion";
+import Pagination from "@/components/pagination";
 import axiosClient from "@/lib/axios";
 import { PAGINATION_FIRST_PAGE, PAGINATION_LIMIT } from "@/lib/constants";
 import { PaginatedResult, TaskResponse } from "@/lib/types";
@@ -8,6 +8,7 @@ import { useQuery } from "@tanstack/react-query";
 import PaginationSelect from "@/components/pagination-select";
 import { parseAsInteger, useQueryState } from "nuqs";
 import { TasksSkeleton } from "@/components/skeletons";
+import { H2 } from "@/components/typography";
 
 export default function TasksPage() {
   const [page, setPage] = useQueryState(
@@ -34,27 +35,13 @@ export default function TasksPage() {
     },
   });
 
-  const incrementPage = () => {
-    if (!tasks || tasks.last <= page - 1) {
-      return;
-    }
-    setPage((prev) => prev + 1);
-  };
-
-  const decrementPage = () => {
-    if (page - 1 < PAGINATION_FIRST_PAGE) {
-      return;
-    }
-    setPage((prev) => prev - 1);
-  };
-
   const onPageSizeChange = (value: string) => {
     setPage(PAGINATION_FIRST_PAGE);
     setPageSize(parseInt(value));
   };
 
   if (isError) {
-    return <h1 className="text-center">{error.message}</h1>;
+    return <H2 className="text-center">{error.message}</H2>;
   }
 
   return (
@@ -69,17 +56,25 @@ export default function TasksPage() {
         label="Page size"
         items={[
           { text: "5", value: 5 },
-          { text: "10", value: 10 },
-          { text: "20", value: 20 },
+          { text: "1", value: 1 },
+          { text: "2", value: 2 },
         ]}
         placeholder="Select page size"
       />
       {isPending ? (
         <TasksSkeleton count={pageSize} />
       ) : (
-        <TasksList tasks={tasks} />
+        <>
+          <TasksList tasks={tasks} />
+          {tasks.last > 0 && (
+            <Pagination
+              actualPage={page}
+              pages={tasks.last + 1}
+              onChange={setPage}
+            />
+          )}
+        </>
       )}
-      <Pagination previousPage={decrementPage} nextPage={incrementPage} />
     </div>
   );
 }

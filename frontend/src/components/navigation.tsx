@@ -14,7 +14,7 @@ export default function Navigation() {
   if (user) {
     let links = [
       ...authedNavigationLinks,
-      { title: "Profile", route: `/profile/${user.userId}` },
+      { title: "Profile", route: `/profile/${user.username}` },
     ];
     if (user.role === Role.ADMIN) {
       links = links.concat(adminNavigationLinks);

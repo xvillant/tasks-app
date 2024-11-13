@@ -26,6 +26,7 @@ export type TaskResponse = {
 
 export type AuthResponse = {
   userId: number;
+  username: string;
   token: string;
   role: Role;
 };

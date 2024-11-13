@@ -1,5 +1,6 @@
 import { TasksSkeleton } from "@/components/skeletons";
 import TaskItem from "@/components/task-item";
+import { H2 } from "@/components/typography";
 import { Accordion } from "@/components/ui/accordion";
 import { Separator } from "@/components/ui/separator";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -9,7 +10,7 @@ import { useQuery } from "@tanstack/react-query";
 import { useParams } from "react-router-dom";
 
 export default function ProfilePage() {
-  const { id } = useParams();
+  const { username } = useParams();
 
   const {
     data: dataProfile,
@@ -17,12 +18,14 @@ export default function ProfilePage() {
     isError: isErrorProfile,
     error: errorProfile,
   } = useQuery({
-    queryKey: ["profile", id],
+    queryKey: ["profile", username],
     queryFn: async () => {
-      const response = await axiosClient.get<UserResponse>(`/users/${id}`);
+      const response = await axiosClient.get<UserResponse>(
+        `/users/${username}`
+      );
       return response.data;
     },
-    enabled: !!id,
+    enabled: !!username,
   });
 
   const {
@@ -34,11 +37,11 @@ export default function ProfilePage() {
     queryKey: ["tasks"],
     queryFn: async () => {
       const response = await axiosClient.get<TaskResponse[]>(
-        `tasks/user/${id}`
+        `tasks/user/${username}`
       );
       return response.data;
     },
-    enabled: !!id,
+    enabled: !!username,
   });
 
   function ProfileTasks() {
@@ -47,11 +50,11 @@ export default function ProfilePage() {
     }
 
     if (isErrorTasks) {
-      return <h1 className="text-center">{errorTasks.message}</h1>;
+      return <H2 className="text-center">{errorTasks.message}</H2>;
     }
 
     if (dataTasks.length <= 0) {
-      return <h1 className="text-center">No tasks available...</h1>;
+      return <H2 className="text-center">No tasks available...</H2>;
     }
 
     return (
@@ -69,7 +72,7 @@ export default function ProfilePage() {
     }
 
     if (isErrorProfile) {
-      return <h1 className="text-center">{errorProfile.message}</h1>;
+      return <H2 className="text-center">{errorProfile.message}</H2>;
     }
 
     return <h1>{dataProfile.username}</h1>;

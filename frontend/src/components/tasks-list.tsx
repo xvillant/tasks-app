@@ -1,6 +1,7 @@
 import { PaginatedResult, TaskResponse } from "@/lib/types";
 import { Accordion } from "@/components/ui/accordion";
 import TaskItem from "./task-item";
+import { H2 } from "@/components/typography";
 
 export default function TasksList({
   tasks,
@@ -8,7 +9,7 @@ export default function TasksList({
   tasks: PaginatedResult<TaskResponse>;
 }) {
   if (tasks.total <= 0) {
-    return <h1 className="text-center">No tasks available...</h1>;
+    return <H2 className="text-center">No tasks available...</H2>;
   }
 
   return (

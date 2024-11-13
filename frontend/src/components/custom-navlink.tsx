@@ -13,7 +13,7 @@ export default function CustomNavLink({
       to={to}
       className={({ isActive }) =>
         isActive
-          ? "underline underline-offset-4 font-bold"
+          ? "underline underline-offset-4 text-primary font-bold"
           : "hover:underline underline-offset-4"
       }
     >

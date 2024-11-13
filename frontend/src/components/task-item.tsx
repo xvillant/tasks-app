@@ -16,6 +16,7 @@ import { useState } from "react";
 import { Button } from "./ui/button";
 import TaskForm from "./task-form";
 import DeleteActionAlert from "./delete-action-alert";
+import { Link } from "react-router-dom";
 
 export default function TaskItem({ task }: { task: TaskResponse }) {
   const user = useUserStore((state) => state.user);
@@ -49,6 +50,7 @@ export default function TaskItem({ task }: { task: TaskResponse }) {
       toast({ title: error.message, variant: "destructive" });
     },
   });
+
   return (
     <AccordionItem key={task.id} value={task.id}>
       <AccordionTrigger>
@@ -100,7 +102,15 @@ export default function TaskItem({ task }: { task: TaskResponse }) {
               )}
             </div>
           </div>
-          <p className="font-semibold">{`Created by: ${task.user.username}`}</p>
+          <p className="font-semibold">
+            Created by{" "}
+            <Link
+              className="text-primary hover:underline"
+              to={`/profile/${task.user.username}`}
+            >
+              {task.user.username}
+            </Link>
+          </p>
         </div>
       </AccordionContent>
     </AccordionItem>
