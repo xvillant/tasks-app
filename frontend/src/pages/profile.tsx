@@ -1,10 +1,11 @@
+import { TasksSkeleton } from "@/components/skeletons";
 import TaskItem from "@/components/task-item";
 import { Accordion } from "@/components/ui/accordion";
 import { Separator } from "@/components/ui/separator";
+import { Skeleton } from "@/components/ui/skeleton";
 import axiosClient from "@/lib/axios";
 import { TaskResponse, UserResponse } from "@/lib/types";
 import { useQuery } from "@tanstack/react-query";
-import { Loader } from "lucide-react";
 import { useParams } from "react-router-dom";
 
 export default function ProfilePage() {
@@ -42,27 +43,15 @@ export default function ProfilePage() {
 
   function ProfileTasks() {
     if (isPendingTasks) {
-      return (
-        <div className="grid place-items-center">
-          <Loader className="size-8 animate-spin" />
-        </div>
-      );
+      return <TasksSkeleton />;
     }
 
     if (isErrorTasks) {
-      return (
-        <div className="grid place-items-center">
-          <h1>{errorTasks.message}</h1>
-        </div>
-      );
+      return <h1 className="text-center">{errorTasks.message}</h1>;
     }
 
     if (dataTasks.length <= 0) {
-      return (
-        <div className="grid place-items-center">
-          <h1>No tasks available...</h1>
-        </div>
-      );
+      return <h1 className="text-center">No tasks available...</h1>;
     }
 
     return (
@@ -74,25 +63,21 @@ export default function ProfilePage() {
     );
   }
 
-  if (isPendingProfile) {
-    return (
-      <div className="grid place-items-center">
-        <Loader className="size-8 animate-spin" />
-      </div>
-    );
-  }
+  function Profile() {
+    if (isPendingProfile) {
+      return <Skeleton className="h-4 w-full" />;
+    }
 
-  if (isErrorProfile) {
-    return (
-      <div className="grid place-items-center">
-        <h1>{errorProfile.message}</h1>
-      </div>
-    );
+    if (isErrorProfile) {
+      return <h1 className="text-center">{errorProfile.message}</h1>;
+    }
+
+    return <h1>{dataProfile.username}</h1>;
   }
 
   return (
     <div className="flex flex-col">
-      <h1>{dataProfile.username}</h1>
+      <Profile />
       <Separator className="my-4" />
       <ProfileTasks />
     </div>

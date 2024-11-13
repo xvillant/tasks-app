@@ -5,13 +5,19 @@ import axiosClient from "@/lib/axios";
 import { PAGINATION_FIRST_PAGE, PAGINATION_LIMIT } from "@/lib/constants";
 import { PaginatedResult, TaskResponse } from "@/lib/types";
 import { useQuery } from "@tanstack/react-query";
-import { Loader } from "lucide-react";
-import { useState } from "react";
 import PaginationSelect from "@/components/pagination-select";
+import { parseAsInteger, useQueryState } from "nuqs";
+import { TasksSkeleton } from "@/components/skeletons";
 
 export default function TasksPage() {
-  const [page, setPage] = useState(PAGINATION_FIRST_PAGE);
-  const [pageSize, setPageSize] = useState(PAGINATION_LIMIT.toString());
+  const [page, setPage] = useQueryState(
+    "page",
+    parseAsInteger.withDefault(PAGINATION_FIRST_PAGE)
+  );
+  const [pageSize, setPageSize] = useQueryState(
+    "size",
+    parseAsInteger.withDefault(PAGINATION_LIMIT)
+  );
 
   const {
     data: tasks,
@@ -42,12 +48,13 @@ export default function TasksPage() {
     setPage((prev) => prev - 1);
   };
 
+  const onPageSizeChange = (value: string) => {
+    setPage(PAGINATION_FIRST_PAGE);
+    setPageSize(parseInt(value));
+  };
+
   if (isError) {
-    return (
-      <div className="grid place-items-center">
-        <h1>{error.message}</h1>
-      </div>
-    );
+    return <h1 className="text-center">{error.message}</h1>;
   }
 
   return (
@@ -55,39 +62,24 @@ export default function TasksPage() {
       <div className="flex items-center justify-end">
         <TaskForm />
       </div>
+      <PaginationSelect
+        className="self-end"
+        value={pageSize}
+        onChange={onPageSizeChange}
+        label="Page size"
+        items={[
+          { text: "5", value: 5 },
+          { text: "10", value: 10 },
+          { text: "20", value: 20 },
+        ]}
+        placeholder="Select page size"
+      />
       {isPending ? (
-        <div className="grid place-items-center">
-          <Loader className="size-8 animate-spin" />
-        </div>
+        <TasksSkeleton count={pageSize} />
       ) : (
-        <>
-          {tasks.total <= 0 ? (
-            <div className="grid place-items-center">
-              <h1>No tasks available...</h1>
-            </div>
-          ) : (
-            <>
-              <PaginationSelect
-                className="self-end"
-                value={pageSize}
-                onChange={(value) => setPageSize(value)}
-                label="Page size"
-                items={[
-                  { text: "5", value: "5" },
-                  { text: "10", value: "10" },
-                  { text: "20", value: "20" },
-                ]}
-                placeholder="Select page size"
-              />
-              <TasksList tasks={tasks} />
-              <Pagination
-                previousPage={decrementPage}
-                nextPage={incrementPage}
-              />
-            </>
-          )}
-        </>
+        <TasksList tasks={tasks} />
       )}
+      <Pagination previousPage={decrementPage} nextPage={incrementPage} />
     </div>
   );
 }

@@ -17,16 +17,16 @@ export default function PaginationSelect({
   onChange,
   className,
 }: {
-  value: string;
+  value: number;
   label?: string;
   placeholder: string;
-  items: { text: string; value: string }[];
+  items: { text: string; value: number }[];
   onChange: (value: string) => void;
   className?: string;
 }) {
   return (
     <Select
-      value={value}
+      value={value.toString()}
       defaultValue={PAGINATION_LIMIT.toString()}
       onValueChange={onChange}
     >

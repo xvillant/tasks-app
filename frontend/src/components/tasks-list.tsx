@@ -7,6 +7,10 @@ export default function TasksList({
 }: {
   tasks: PaginatedResult<TaskResponse>;
 }) {
+  if (tasks.total <= 0) {
+    return <h1 className="text-center">No tasks available...</h1>;
+  }
+
   return (
     <Accordion type="single" collapsible>
       {tasks.data.map((task) => (

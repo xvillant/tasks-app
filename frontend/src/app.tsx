@@ -6,11 +6,7 @@ export default function App() {
   return (
     <RouterProvider
       router={router}
-      fallbackElement={
-        <div className="grid place-items-center">
-          <Loader className="animate-spin size-8" />
-        </div>
-      }
+      fallbackElement={<Loader className="text-center animate-spin size-8" />}
     />
   );
 }
