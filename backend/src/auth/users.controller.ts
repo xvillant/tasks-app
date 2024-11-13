@@ -5,7 +5,6 @@ import {
   HttpCode,
   HttpStatus,
   Param,
-  ParseIntPipe,
   Post,
 } from '@nestjs/common';
 import { CreateUserDto } from './dto/create-user.dto';
@@ -16,10 +15,10 @@ import { UsersService } from './users.service';
 export class UsersController {
   constructor(private readonly usersService: UsersService) {}
 
-  @Get(':id')
+  @Get(':username')
   @HttpCode(HttpStatus.OK)
-  async findOne(@Param('id', ParseIntPipe) id: number) {
-    return this.usersService.findOne(id);
+  async findOneByUsername(@Param('username') username: string) {
+    return this.usersService.findOneByUsername(username);
   }
 
   @Post()

@@ -8,6 +8,9 @@ export class AuthResponse {
   userId: number;
   @IsString()
   @Expose()
+  username: string;
+  @IsString()
+  @Expose()
   token: string;
   @IsEnum(Role)
   @Expose()

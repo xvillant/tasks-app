@@ -118,9 +118,9 @@ export class TasksService {
     return await this.tasksRepository.save(task);
   }
 
-  async findAllByUserId(userId: number): Promise<Task[]> {
+  async findAllByUsername(username: string): Promise<Task[]> {
     const tasks = await this.tasksRepository.find({
-      where: { userId },
+      where: { user: { username } },
       relations: ['user'],
       order: { createdAt: 'DESC' },
     });

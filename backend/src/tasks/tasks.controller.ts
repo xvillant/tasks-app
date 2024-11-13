@@ -9,7 +9,6 @@ import {
   UseGuards,
   HttpCode,
   HttpStatus,
-  ParseIntPipe,
 } from '@nestjs/common';
 import { TasksService } from './tasks.service';
 import { CreateTaskDto } from './dto/create-task.dto';
@@ -102,7 +101,7 @@ export class TasksController {
   @Get('/user/:id')
   @UseGuards(AuthGuardJwt)
   @HttpCode(HttpStatus.OK)
-  findAllByUserId(@Param('id', ParseIntPipe) id: number): Promise<Task[]> {
-    return this.tasksService.findAllByUserId(id);
+  findAllByUsername(@Param('username') username: string): Promise<Task[]> {
+    return this.tasksService.findAllByUsername(username);
   }
 }
