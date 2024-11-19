@@ -98,7 +98,7 @@ export class TasksController {
     return this.tasksService.toggleComplete(id, user);
   }
 
-  @Get('/user/:id')
+  @Get('/user/:username')
   @UseGuards(AuthGuardJwt)
   @HttpCode(HttpStatus.OK)
   findAllByUsername(@Param('username') username: string): Promise<Task[]> {

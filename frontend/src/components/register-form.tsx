@@ -56,6 +56,7 @@ export default function RegisterForm() {
         role: response.data.role,
         token: response.data.token,
         userId: response.data.id,
+        username: response.data.username,
       });
       toast({
         title: "Successfully registered",
