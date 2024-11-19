@@ -3,7 +3,7 @@ import {
   PaginationItem,
   Pagination as ShadPagination,
 } from "@/components/ui/pagination";
-import { Button } from "./ui/button";
+import { Button } from "@/components/ui/button";
 import clsx from "clsx";
 
 export default function Pagination({

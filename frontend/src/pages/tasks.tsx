@@ -2,7 +2,11 @@ import TaskForm from "@/components/task-form";
 import TasksList from "@/components/tasks-list";
 import Pagination from "@/components/pagination";
 import axiosClient from "@/lib/axios";
-import { PAGINATION_FIRST_PAGE, PAGINATION_LIMIT } from "@/lib/constants";
+import {
+  PAGINATION_FIRST_PAGE,
+  PAGINATION_LIMIT,
+  PAGINATION_LIMIT_OPTIONS,
+} from "@/lib/constants";
 import { PaginatedResult, TaskResponse } from "@/lib/types";
 import { useQuery } from "@tanstack/react-query";
 import PaginationSelect from "@/components/pagination-select";
@@ -54,11 +58,7 @@ export default function TasksPage() {
         value={pageSize}
         onChange={onPageSizeChange}
         label="Page size"
-        items={[
-          { text: "5", value: 5 },
-          { text: "1", value: 1 },
-          { text: "2", value: 2 },
-        ]}
+        items={PAGINATION_LIMIT_OPTIONS}
         placeholder="Select page size"
       />
       {isPending ? (

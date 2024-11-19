@@ -34,14 +34,16 @@ export type AuthResponse = {
 export type UserResponse = {
   id: number;
   username: string;
-  email: string;
-  firstName: string;
-  lastName: string;
+  email?: string;
+  firstName?: string;
+  lastName?: string;
   role: Role;
-  createdAt: string;
-  updatedAt: string;
-  tasks: TaskResponse[];
+  createdAt?: string;
+  updatedAt?: string;
+  tasks?: TaskResponse[];
 };
+
+export type PaginationOption = { text: string; value: number };
 
 export type ErrorResponse = {
   message: string;

@@ -1,5 +1,6 @@
 import {
   ErrorResponse,
+  PaginatedResult,
   TaskFormSchema,
   TaskFormValues,
   TaskResponse,
@@ -32,6 +33,9 @@ import { queryClient } from "@/main";
 import { useState } from "react";
 import { toast } from "@/hooks/use-toast";
 import { AxiosError } from "axios";
+import { useLocation, useSearchParams } from "react-router-dom";
+import { PAGINATION_FIRST_PAGE, PAGINATION_LIMIT } from "@/lib/constants";
+import { useUserStore } from "@/store/userStore";
 
 type TaskFormProps = {
   task?: TaskResponse;
@@ -49,6 +53,17 @@ export default function TaskForm({
   buttonVariant = "default",
 }: TaskFormProps) {
   const [open, setOpen] = useState(false);
+  const [searchParams] = useSearchParams();
+  const user = useUserStore((state) => state.user);
+  const { pathname } = useLocation();
+  const isProfile = pathname.startsWith("/profile");
+
+  const page = parseInt(
+    searchParams.get("page") || PAGINATION_FIRST_PAGE.toString()
+  );
+  const pageSize = parseInt(
+    searchParams.get("size") || PAGINATION_LIMIT.toString()
+  );
 
   const form = useForm<TaskFormValues>({
     resolver: zodResolver(TaskFormSchema),
@@ -72,8 +87,119 @@ export default function TaskForm({
       }
       return response.data;
     },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["tasks"] });
+    onMutate: (data: TaskFormValues) => {
+      if (user && isProfile) {
+        const { username } = user;
+
+        queryClient.cancelQueries({
+          queryKey: ["tasks", { username }],
+        });
+
+        const previousTasks = queryClient.getQueryData<TaskResponse[]>([
+          "tasks",
+          { username },
+        ]);
+
+        queryClient.setQueryData(
+          ["tasks", { username }],
+          (old: TaskResponse[] | undefined) => {
+            if (!old || !user || !task) return old;
+
+            const updatedTasks = old.map((t) =>
+              t.id === task.id ? { ...t, ...data } : t
+            );
+
+            return updatedTasks;
+          }
+        );
+        return { previousTasks };
+      } else {
+        queryClient.cancelQueries({ queryKey: ["tasks", { page, pageSize }] });
+
+        const previousTasks = queryClient.getQueryData<
+          PaginatedResult<TaskResponse>
+        >(["tasks", { page, pageSize }]);
+
+        queryClient.setQueryData(
+          ["tasks", { page, pageSize }],
+          (old: PaginatedResult<TaskResponse> | undefined) => {
+            if (!old || !user) return old;
+
+            let updatedTasks;
+
+            if (task) {
+              updatedTasks = old.data.map((t) =>
+                t.id === task.id ? { ...t, ...data } : t
+              );
+            } else {
+              const newTask: TaskResponse = {
+                id: "optimistic-temp-id", // temporary ID for the optimistic update
+                title: data.title,
+                description: data.description,
+                completed: false,
+                completedAt: null,
+                createdAt: new Date().toISOString(),
+                updatedAt: new Date().toISOString(),
+                user: {
+                  id: user.userId,
+                  username: user.username,
+                  role: user.role,
+                },
+              };
+              updatedTasks = [...old.data, newTask];
+            }
+
+            const newTotal = old.total + 1;
+            const newLast = Math.max(Math.ceil(newTotal / old.size) - 1, 0);
+
+            return {
+              ...old,
+              total: newTotal,
+              last: newLast,
+              data: updatedTasks,
+            };
+          }
+        );
+        return { previousTasks };
+      }
+    },
+    onError: (error: AxiosError<ErrorResponse>, _, context) => {
+      if (context?.previousTasks) {
+        queryClient.setQueryData(
+          ["tasks", { page, pageSize }],
+          context.previousTasks
+        );
+      }
+      toast({
+        title: error.response?.data.message || "An error occurred",
+        variant: "destructive",
+      });
+    },
+    onSuccess: (data: TaskResponse) => {
+      queryClient.setQueryData(
+        ["tasks", { page, pageSize }],
+        (old: PaginatedResult<TaskResponse> | undefined) => {
+          if (!old) return old;
+
+          const updatedTasks = old.data.map((task) => {
+            if (task.id === "optimistic-temp-id") {
+              // Replace the temporary ID with the real ID after server response
+              return { ...task, ...data, id: data.id };
+            }
+            return task;
+          });
+
+          return {
+            ...old,
+            data: updatedTasks,
+          };
+        }
+      );
+
+      queryClient.invalidateQueries({
+        queryKey: ["tasks", { page, pageSize }],
+      });
+
       setOpen(false);
       toast({
         title: task
@@ -81,12 +207,6 @@ export default function TaskForm({
           : "Successfully created a task",
       });
       form.reset();
-    },
-    onError: (error: AxiosError<ErrorResponse>) => {
-      toast({
-        title: error.response?.data.message || "An error occurred",
-        variant: "destructive",
-      });
     },
   });
 
@@ -134,7 +254,7 @@ export default function TaskForm({
               )}
             />
 
-            <DialogFooter className="sm:justify-start">
+            <DialogFooter className="md:gap-0 gap-2">
               <Button type="submit">{task ? "Edit" : "Create"}</Button>
               <DialogClose asChild>
                 <Button type="button" variant="secondary">

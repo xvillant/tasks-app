@@ -8,6 +8,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { PAGINATION_LIMIT } from "@/lib/constants";
+import { PaginationOption } from "@/lib/types";
 
 export default function PaginationSelect({
   value,
@@ -20,7 +21,7 @@ export default function PaginationSelect({
   value: number;
   label?: string;
   placeholder: string;
-  items: { text: string; value: number }[];
+  items: PaginationOption[];
   onChange: (value: string) => void;
   className?: string;
 }) {

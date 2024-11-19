@@ -1,9 +1,14 @@
-import { ErrorResponse, Role, TaskResponse } from "@/lib/types";
+import {
+  ErrorResponse,
+  PaginatedResult,
+  Role,
+  TaskResponse,
+} from "@/lib/types";
 import {
   AccordionContent,
   AccordionItem,
   AccordionTrigger,
-} from "./ui/accordion";
+} from "@/components/ui/accordion";
 import { Check, X } from "lucide-react";
 import { formatDate } from "@/lib/utils";
 import { AxiosError } from "axios";
@@ -13,15 +18,27 @@ import axiosClient from "@/lib/axios";
 import { useMutation } from "@tanstack/react-query";
 import { useUserStore } from "@/store/userStore";
 import { useState } from "react";
-import { Button } from "./ui/button";
-import TaskForm from "./task-form";
-import DeleteActionAlert from "./delete-action-alert";
-import { Link } from "react-router-dom";
+import { Button } from "@/components/ui/button";
+import TaskForm from "@/components/task-form";
+import DeleteActionAlert from "@/components/delete-action-alert";
+import { Link, useLocation, useSearchParams } from "react-router-dom";
+import { P, SPAN } from "@/components/typography";
+import { PAGINATION_FIRST_PAGE, PAGINATION_LIMIT } from "@/lib/constants";
 
 export default function TaskItem({ task }: { task: TaskResponse }) {
   const user = useUserStore((state) => state.user);
-
+  const [searchParams] = useSearchParams();
+  const { pathname } = useLocation();
   const [openAlert, setOpenAlert] = useState(false);
+
+  const isProfile = pathname.startsWith("/profile");
+
+  const page = parseInt(
+    searchParams.get("page") || PAGINATION_FIRST_PAGE.toString()
+  );
+  const pageSize = parseInt(
+    searchParams.get("size") || PAGINATION_LIMIT.toString()
+  );
 
   const deleteMutation = useMutation({
     mutationKey: ["delete", task.id],
@@ -29,12 +46,68 @@ export default function TaskItem({ task }: { task: TaskResponse }) {
       const response = await axiosClient.delete(`/tasks/${id}`);
       return response.data;
     },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["tasks"] });
-      toast({ title: "Successfully deleted task" });
+    onMutate: (id: string) => {
+      if (isProfile && user) {
+        const { username } = user;
+        queryClient.cancelQueries({ queryKey: ["tasks", { username }] });
+        const previousTasks = queryClient.getQueryData<TaskResponse[]>([
+          "tasks",
+          { username },
+        ]);
+
+        queryClient.setQueryData(
+          ["tasks", { username }],
+          (old: TaskResponse[] | undefined) => {
+            if (!old) return old;
+
+            const updatedTasks = old.filter((task) => task.id !== id);
+
+            return updatedTasks;
+          }
+        );
+        return { previousTasks };
+      } else {
+        queryClient.cancelQueries({ queryKey: ["tasks", { page, pageSize }] });
+
+        const previousTasks = queryClient.getQueryData<
+          PaginatedResult<TaskResponse>
+        >(["tasks", { page, pageSize }]);
+
+        queryClient.setQueryData(
+          ["tasks", { page, pageSize }],
+          (old: PaginatedResult<TaskResponse> | undefined) => {
+            if (!old) return old;
+
+            const updatedTasks = old.data.filter((task) => task.id !== id);
+
+            const newTotal = old.total - 1;
+            const newLast = Math.max(Math.ceil(newTotal / old.size) - 1, 0);
+
+            return {
+              ...old,
+              total: newTotal,
+              last: newLast,
+              data: updatedTasks,
+            };
+          }
+        );
+        return { previousTasks };
+      }
     },
-    onError: (error: AxiosError<ErrorResponse>) => {
+    onError: (error: AxiosError<ErrorResponse>, _, context) => {
+      if (context?.previousTasks) {
+        queryClient.setQueryData(
+          ["tasks", { page, pageSize }],
+          context.previousTasks
+        );
+      }
       toast({ title: error.message, variant: "destructive" });
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({
+        queryKey: ["tasks", { page, pageSize }],
+      });
+      toast({ title: "Successfully deleted task" });
     },
   });
 
@@ -43,11 +116,83 @@ export default function TaskItem({ task }: { task: TaskResponse }) {
     mutationFn: async (id: string) => {
       await axiosClient.patch(`/tasks/${id}/complete`);
     },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["tasks"] });
+    onMutate: (id: string) => {
+      if (isProfile && user) {
+        const { username } = user;
+        queryClient.cancelQueries({ queryKey: ["tasks", { username }] });
+
+        const previousTasks = queryClient.getQueryData<TaskResponse[]>([
+          "tasks",
+          { username },
+        ]);
+
+        queryClient.setQueryData(
+          ["tasks", { username }],
+          (old: TaskResponse[] | undefined) => {
+            if (!old) return old;
+
+            const updatedTasks = old.map((task) =>
+              task.id === id
+                ? {
+                    ...task,
+                    completed: !task.completed,
+                    completedAt: new Date().toISOString(),
+                  }
+                : task
+            );
+
+            return updatedTasks;
+          }
+        );
+
+        return { previousTasks };
+      } else {
+        queryClient.cancelQueries({
+          queryKey: ["tasks", { page, pageSize }],
+        });
+
+        const previousTasks = queryClient.getQueryData<
+          PaginatedResult<TaskResponse>
+        >(["tasks", { page, pageSize }]);
+
+        queryClient.setQueryData(
+          ["tasks", { page, pageSize }],
+          (old: PaginatedResult<TaskResponse> | undefined) => {
+            if (!old) return old;
+
+            const updatedTasks = old.data.map((task) =>
+              task.id === id
+                ? {
+                    ...task,
+                    completed: !task.completed,
+                    completedAt: new Date().toISOString(),
+                  }
+                : task
+            );
+
+            return {
+              ...old,
+              data: updatedTasks,
+            };
+          }
+        );
+
+        return { previousTasks };
+      }
     },
-    onError: (error: AxiosError<ErrorResponse>) => {
+    onError: (error: AxiosError<ErrorResponse>, _, context) => {
+      if (context?.previousTasks) {
+        queryClient.setQueryData(
+          ["tasks", { page, pageSize }],
+          context.previousTasks
+        );
+      }
       toast({ title: error.message, variant: "destructive" });
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({
+        queryKey: ["tasks", { page, pageSize }],
+      });
     },
   });
 
@@ -60,15 +205,15 @@ export default function TaskItem({ task }: { task: TaskResponse }) {
           ) : (
             <X className="text-destructive" />
           )}
-          <p className="font-bold">{task.title}</p>
+          <P className="font-bold">{task.title}</P>
         </div>
       </AccordionTrigger>
       <AccordionContent>
         <div className="flex flex-col">
           <div className="flex items-center justify-between">
             <div className="flex gap-2 items-center">
-              <p className="font-semibold">{formatDate(task.createdAt)}</p>
-              <p>{task.description}</p>
+              <P className="font-semibold">{formatDate(task.createdAt)}</P>
+              <P>{task.description}</P>
             </div>
             <div className="flex flex-col gap-1">
               {user &&
@@ -96,13 +241,11 @@ export default function TaskItem({ task }: { task: TaskResponse }) {
                   </div>
                 )}
               {task.completed && task.completedAt !== null && (
-                <p className="text-xs">{`Completed: ${formatDate(
-                  task.completedAt
-                )}`}</p>
+                <SPAN>{`Completed: ${formatDate(task.completedAt)}`}</SPAN>
               )}
             </div>
           </div>
-          <p className="font-semibold">
+          <P className="font-semibold">
             Created by{" "}
             <Link
               className="text-primary hover:underline"
@@ -110,7 +253,7 @@ export default function TaskItem({ task }: { task: TaskResponse }) {
             >
               {task.user.username}
             </Link>
-          </p>
+          </P>
         </div>
       </AccordionContent>
     </AccordionItem>

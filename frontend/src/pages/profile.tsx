@@ -34,7 +34,7 @@ export default function ProfilePage() {
     isError: isErrorTasks,
     error: errorTasks,
   } = useQuery({
-    queryKey: ["tasks"],
+    queryKey: ["tasks", { username }],
     queryFn: async () => {
       const response = await axiosClient.get<TaskResponse[]>(
         `tasks/user/${username}`
