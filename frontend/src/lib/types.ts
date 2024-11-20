@@ -1,5 +1,7 @@
 import { z } from "zod";
 
+export type Filter = "all" | "completed" | "uncompleted";
+
 export enum Role {
   USER = "USER",
   ADMIN = "ADMIN",
@@ -13,7 +15,7 @@ export type PaginatedResult<T> = {
   total: number;
 };
 
-export type TaskResponse = {
+export type Task = {
   id: string;
   title: string;
   description: string;
@@ -21,17 +23,17 @@ export type TaskResponse = {
   completedAt: string | null;
   createdAt: string;
   updatedAt: string;
-  user: UserResponse;
+  user: User;
 };
 
-export type AuthResponse = {
+export type Auth = {
   userId: number;
   username: string;
   token: string;
   role: Role;
 };
 
-export type UserResponse = {
+export type User = {
   id: number;
   username: string;
   email?: string;
@@ -40,7 +42,7 @@ export type UserResponse = {
   role: Role;
   createdAt?: string;
   updatedAt?: string;
-  tasks?: TaskResponse[];
+  tasks?: Task[];
 };
 
 export type PaginationOption = { text: string; value: number };

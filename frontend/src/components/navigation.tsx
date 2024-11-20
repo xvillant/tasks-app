@@ -3,10 +3,10 @@ import {
   adminNavigationLinks,
   publicNavigationLinks,
 } from "@/lib/navigation-links";
-import { Role } from "@/lib/types";
 import { useUserStore } from "@/store/userStore";
 import LogoutButton from "@/components/logout-button";
 import CustomNavLink from "@/components/custom-navlink";
+import { isAdmin } from "@/lib/utils";
 
 export default function Navigation() {
   const user = useUserStore((state) => state.user);
@@ -16,7 +16,7 @@ export default function Navigation() {
       ...authedNavigationLinks,
       { title: "Profile", route: `/profile/${user.username}` },
     ];
-    if (user.role === Role.ADMIN) {
+    if (isAdmin(user)) {
       links = links.concat(adminNavigationLinks);
     }
 

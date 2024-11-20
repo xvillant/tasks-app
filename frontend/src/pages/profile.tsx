@@ -2,6 +2,7 @@ import { TasksSkeleton } from "@/components/skeletons";
 import TaskItem from "@/components/task-item";
 import { H2 } from "@/components/typography";
 import { Accordion } from "@/components/ui/accordion";
+import { Button } from "@/components/ui/button";
 import {
   ChartConfig,
   ChartContainer,
@@ -12,9 +13,13 @@ import { Separator } from "@/components/ui/separator";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Table, TableBody, TableCell, TableRow } from "@/components/ui/table";
 import axiosClient from "@/lib/axios";
-import { TaskResponse, UserResponse } from "@/lib/types";
+import { FILTER_VALUES } from "@/lib/constants";
+import { Task, User, Filter } from "@/lib/types";
 import { formatDate } from "@/lib/utils";
 import { useQuery } from "@tanstack/react-query";
+import clsx from "clsx";
+import { createParser, useQueryState } from "nuqs";
+import { useMemo } from "react";
 import { useParams } from "react-router-dom";
 import { Bar, BarChart, CartesianGrid, XAxis, YAxis } from "recharts";
 
@@ -29,8 +34,25 @@ const chartConfig = {
   },
 } satisfies ChartConfig;
 
+const parseAsFilter = createParser({
+  parse(queryValue) {
+    if (!FILTER_VALUES.includes(queryValue as Filter)) {
+      return null;
+    }
+
+    return queryValue as Filter;
+  },
+  serialize(value: Filter) {
+    return value;
+  },
+});
+
 export default function ProfilePage() {
   const { username } = useParams();
+  const [filter, setFilter] = useQueryState(
+    "filter",
+    parseAsFilter.withDefault("all")
+  );
 
   const {
     data: dataProfile,
@@ -40,9 +62,7 @@ export default function ProfilePage() {
   } = useQuery({
     queryKey: ["profile", username],
     queryFn: async () => {
-      const response = await axiosClient.get<UserResponse>(
-        `/users/${username}`
-      );
+      const response = await axiosClient.get<User>(`/users/${username}`);
       return response.data;
     },
     enabled: !!username,
@@ -56,23 +76,34 @@ export default function ProfilePage() {
   } = useQuery({
     queryKey: ["tasks", { username }],
     queryFn: async () => {
-      const response = await axiosClient.get<TaskResponse[]>(
-        `tasks/user/${username}`
-      );
+      const response = await axiosClient.get<Task[]>(`tasks/user/${username}`);
       return response.data;
     },
     enabled: !!username,
   });
 
-  const chartData = [
-    {
-      status: `Status ${dataTasks?.length} of my task${
-        dataTasks?.length === 1 ? "" : "s"
-      }`,
-      completed: dataTasks?.filter((task) => task.completed).length,
-      uncompleted: dataTasks?.filter((task) => !task.completed).length,
-    },
-  ];
+  const chartData = useMemo(() => {
+    return [
+      {
+        status: `Status ${dataTasks?.length} of my task${
+          dataTasks?.length === 1 ? "" : "s"
+        }`,
+        completed: dataTasks?.filter((task) => task.completed).length,
+        uncompleted: dataTasks?.filter((task) => !task.completed).length,
+      },
+    ];
+  }, [dataTasks]);
+
+  const filteredTasks = useMemo(() => {
+    switch (filter) {
+      case "completed":
+        return dataTasks?.filter((task) => task.completed);
+      case "uncompleted":
+        return dataTasks?.filter((task) => !task.completed);
+      default:
+        return dataTasks;
+    }
+  }, [filter, dataTasks]);
 
   function ProfileTasks() {
     if (isPendingTasks) {
@@ -86,18 +117,51 @@ export default function ProfilePage() {
     if (dataTasks.length <= 0) {
       <div className="flex flex-col gap-5">
         <H2 className="text-primary">My tasks</H2>
-        return <H2 className="text-center">No tasks available...</H2>;
+        <H2 className="text-center">No tasks available...</H2>;
       </div>;
     }
 
     return (
       <div className="flex flex-col gap-5">
         <H2 className="text-primary">My tasks</H2>
-        <Accordion type="single" collapsible>
-          {dataTasks.map((task) => (
-            <TaskItem key={task.id} task={task} />
-          ))}
-        </Accordion>
+        <div className="flex items-center gap-2">
+          <Button
+            className={clsx({
+              "bg-foreground text-background hover:bg-foreground/90":
+                filter === "all",
+            })}
+            onClick={() => setFilter("all")}
+          >
+            All
+          </Button>
+          <Button
+            className={clsx({
+              "bg-foreground text-background hover:bg-foreground/90":
+                filter === "completed",
+            })}
+            onClick={() => setFilter("completed")}
+          >
+            Completed
+          </Button>
+          <Button
+            className={clsx({
+              "bg-foreground text-background hover:bg-foreground/90":
+                filter === "uncompleted",
+            })}
+            onClick={() => setFilter("uncompleted")}
+          >
+            Uncompleted
+          </Button>
+        </div>
+        {filteredTasks!.length <= 0 ? (
+          <H2 className="text-center">No tasks available for this filter...</H2>
+        ) : (
+          <Accordion type="single" collapsible>
+            {filteredTasks?.map((task) => (
+              <TaskItem key={task.id} task={task} />
+            ))}
+          </Accordion>
+        )}
       </div>
     );
   }
@@ -112,7 +176,7 @@ export default function ProfilePage() {
     }
 
     return (
-      <div className="flex flex-col md:flex-row">
+      <div className="flex flex-col md:flex-row gap-5">
         <div className="flex-1 flex flex-col gap-5">
           <H2 className="text-primary">My profile</H2>
           <Table>

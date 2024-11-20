@@ -1,16 +1,11 @@
-import {
-  ErrorResponse,
-  PaginatedResult,
-  Role,
-  TaskResponse,
-} from "@/lib/types";
+import { ErrorResponse, PaginatedResult, Task } from "@/lib/types";
 import {
   AccordionContent,
   AccordionItem,
   AccordionTrigger,
 } from "@/components/ui/accordion";
 import { Check, X } from "lucide-react";
-import { formatDate } from "@/lib/utils";
+import { formatDate, hasPermission, isAdmin, isTaskOwner } from "@/lib/utils";
 import { AxiosError } from "axios";
 import { toast } from "@/hooks/use-toast";
 import { queryClient } from "@/main";
@@ -25,7 +20,7 @@ import { Link, useLocation, useSearchParams } from "react-router-dom";
 import { P, SPAN } from "@/components/typography";
 import { PAGINATION_FIRST_PAGE, PAGINATION_LIMIT } from "@/lib/constants";
 
-export default function TaskItem({ task }: { task: TaskResponse }) {
+export default function TaskItem({ task }: { task: Task }) {
   const user = useUserStore((state) => state.user);
   const [searchParams] = useSearchParams();
   const { pathname } = useLocation();
@@ -50,14 +45,14 @@ export default function TaskItem({ task }: { task: TaskResponse }) {
       if (isProfile && user) {
         const { username } = user;
         queryClient.cancelQueries({ queryKey: ["tasks", { username }] });
-        const previousTasks = queryClient.getQueryData<TaskResponse[]>([
+        const previousTasks = queryClient.getQueryData<Task[]>([
           "tasks",
           { username },
         ]);
 
         queryClient.setQueryData(
           ["tasks", { username }],
-          (old: TaskResponse[] | undefined) => {
+          (old: Task[] | undefined) => {
             if (!old) return old;
 
             const updatedTasks = old.filter((task) => task.id !== id);
@@ -69,13 +64,14 @@ export default function TaskItem({ task }: { task: TaskResponse }) {
       } else {
         queryClient.cancelQueries({ queryKey: ["tasks", { page, pageSize }] });
 
-        const previousTasks = queryClient.getQueryData<
-          PaginatedResult<TaskResponse>
-        >(["tasks", { page, pageSize }]);
+        const previousTasks = queryClient.getQueryData<PaginatedResult<Task>>([
+          "tasks",
+          { page, pageSize },
+        ]);
 
         queryClient.setQueryData(
           ["tasks", { page, pageSize }],
-          (old: PaginatedResult<TaskResponse> | undefined) => {
+          (old: PaginatedResult<Task> | undefined) => {
             if (!old) return old;
 
             const updatedTasks = old.data.filter((task) => task.id !== id);
@@ -121,14 +117,14 @@ export default function TaskItem({ task }: { task: TaskResponse }) {
         const { username } = user;
         queryClient.cancelQueries({ queryKey: ["tasks", { username }] });
 
-        const previousTasks = queryClient.getQueryData<TaskResponse[]>([
+        const previousTasks = queryClient.getQueryData<Task[]>([
           "tasks",
           { username },
         ]);
 
         queryClient.setQueryData(
           ["tasks", { username }],
-          (old: TaskResponse[] | undefined) => {
+          (old: Task[] | undefined) => {
             if (!old) return old;
 
             const updatedTasks = old.map((task) =>
@@ -151,13 +147,14 @@ export default function TaskItem({ task }: { task: TaskResponse }) {
           queryKey: ["tasks", { page, pageSize }],
         });
 
-        const previousTasks = queryClient.getQueryData<
-          PaginatedResult<TaskResponse>
-        >(["tasks", { page, pageSize }]);
+        const previousTasks = queryClient.getQueryData<PaginatedResult<Task>>([
+          "tasks",
+          { page, pageSize },
+        ]);
 
         queryClient.setQueryData(
           ["tasks", { page, pageSize }],
-          (old: PaginatedResult<TaskResponse> | undefined) => {
+          (old: PaginatedResult<Task> | undefined) => {
             if (!old) return old;
 
             const updatedTasks = old.data.map((task) =>
@@ -196,6 +193,43 @@ export default function TaskItem({ task }: { task: TaskResponse }) {
     },
   });
 
+  function TaskControls() {
+    return (
+      <div className="flex flex-col gap-1">
+        {(isAdmin(user) || isTaskOwner(user, task)) && (
+          <div className="flex items-center gap-2">
+            {hasPermission(user, "complete:tasks", task) && (
+              <Button onClick={() => completeMutation.mutate(task.id)}>
+                {task.completed ? "Uncomplete" : "Complete"}
+              </Button>
+            )}
+            {hasPermission(user, "edit:tasks", task) && (
+              <TaskForm buttonVariant="outline" task={task} />
+            )}
+            {hasPermission(user, "delete:tasks", task) && (
+              <>
+                <Button
+                  variant="destructive"
+                  onClick={() => setOpenAlert(true)}
+                >
+                  Delete
+                </Button>
+                <DeleteActionAlert
+                  open={openAlert}
+                  setOpen={setOpenAlert}
+                  onDelete={() => deleteMutation.mutate(task.id)}
+                />
+              </>
+            )}
+          </div>
+        )}
+        {task.completed && task.completedAt !== null && (
+          <SPAN>{`Completed: ${formatDate(task.completedAt)}`}</SPAN>
+        )}
+      </div>
+    );
+  }
+
   return (
     <AccordionItem key={task.id} value={task.id}>
       <AccordionTrigger>
@@ -215,35 +249,7 @@ export default function TaskItem({ task }: { task: TaskResponse }) {
               <P className="font-semibold">{formatDate(task.createdAt)}</P>
               <P>{task.description}</P>
             </div>
-            <div className="flex flex-col gap-1">
-              {user &&
-                (user.role === Role.ADMIN || user.userId === task.user.id) && (
-                  <div className="flex items-center gap-2">
-                    <Button onClick={() => completeMutation.mutate(task.id)}>
-                      {task.completed ? "Uncomplete" : "Complete"}
-                    </Button>
-                    <TaskForm buttonVariant="outline" task={task} />
-                    {user.role === Role.ADMIN && (
-                      <>
-                        <Button
-                          variant="destructive"
-                          onClick={() => setOpenAlert(true)}
-                        >
-                          Delete
-                        </Button>
-                        <DeleteActionAlert
-                          open={openAlert}
-                          setOpen={setOpenAlert}
-                          onDelete={() => deleteMutation.mutate(task.id)}
-                        />
-                      </>
-                    )}
-                  </div>
-                )}
-              {task.completed && task.completedAt !== null && (
-                <SPAN>{`Completed: ${formatDate(task.completedAt)}`}</SPAN>
-              )}
-            </div>
+            <TaskControls />
           </div>
           <P className="font-semibold">
             Created by{" "}

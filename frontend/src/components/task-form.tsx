@@ -3,7 +3,7 @@ import {
   PaginatedResult,
   TaskFormSchema,
   TaskFormValues,
-  TaskResponse,
+  Task,
 } from "@/lib/types";
 import {
   Dialog,
@@ -38,7 +38,7 @@ import { PAGINATION_FIRST_PAGE, PAGINATION_LIMIT } from "@/lib/constants";
 import { useUserStore } from "@/store/userStore";
 
 type TaskFormProps = {
-  task?: TaskResponse;
+  task?: Task;
   buttonVariant?:
     | "default"
     | "destructive"
@@ -78,12 +78,9 @@ export default function TaskForm({
     mutationFn: async (data: TaskFormValues) => {
       let response;
       if (task) {
-        response = await axiosClient.patch<TaskResponse>(
-          `/tasks/${task.id}`,
-          data
-        );
+        response = await axiosClient.patch<Task>(`/tasks/${task.id}`, data);
       } else {
-        response = await axiosClient.post<TaskResponse>("/tasks/", data);
+        response = await axiosClient.post<Task>("/tasks/", data);
       }
       return response.data;
     },
@@ -95,14 +92,14 @@ export default function TaskForm({
           queryKey: ["tasks", { username }],
         });
 
-        const previousTasks = queryClient.getQueryData<TaskResponse[]>([
+        const previousTasks = queryClient.getQueryData<Task[]>([
           "tasks",
           { username },
         ]);
 
         queryClient.setQueryData(
           ["tasks", { username }],
-          (old: TaskResponse[] | undefined) => {
+          (old: Task[] | undefined) => {
             if (!old || !user || !task) return old;
 
             const updatedTasks = old.map((t) =>
@@ -116,13 +113,14 @@ export default function TaskForm({
       } else {
         queryClient.cancelQueries({ queryKey: ["tasks", { page, pageSize }] });
 
-        const previousTasks = queryClient.getQueryData<
-          PaginatedResult<TaskResponse>
-        >(["tasks", { page, pageSize }]);
+        const previousTasks = queryClient.getQueryData<PaginatedResult<Task>>([
+          "tasks",
+          { page, pageSize },
+        ]);
 
         queryClient.setQueryData(
           ["tasks", { page, pageSize }],
-          (old: PaginatedResult<TaskResponse> | undefined) => {
+          (old: PaginatedResult<Task> | undefined) => {
             if (!old || !user) return old;
 
             let updatedTasks;
@@ -132,7 +130,7 @@ export default function TaskForm({
                 t.id === task.id ? { ...t, ...data } : t
               );
             } else {
-              const newTask: TaskResponse = {
+              const newTask: Task = {
                 id: "optimistic-temp-id", // temporary ID for the optimistic update
                 title: data.title,
                 description: data.description,
@@ -175,10 +173,10 @@ export default function TaskForm({
         variant: "destructive",
       });
     },
-    onSuccess: (data: TaskResponse) => {
+    onSuccess: (data: Task) => {
       queryClient.setQueryData(
         ["tasks", { page, pageSize }],
-        (old: PaginatedResult<TaskResponse> | undefined) => {
+        (old: PaginatedResult<Task> | undefined) => {
           if (!old) return old;
 
           const updatedTasks = old.data.map((task) => {

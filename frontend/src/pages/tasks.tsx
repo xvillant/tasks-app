@@ -7,7 +7,7 @@ import {
   PAGINATION_LIMIT,
   PAGINATION_LIMIT_OPTIONS,
 } from "@/lib/constants";
-import { PaginatedResult, TaskResponse } from "@/lib/types";
+import { PaginatedResult, Task } from "@/lib/types";
 import { useQuery } from "@tanstack/react-query";
 import PaginationSelect from "@/components/pagination-select";
 import { parseAsInteger, useQueryState } from "nuqs";
@@ -32,7 +32,7 @@ export default function TasksPage() {
   } = useQuery({
     queryKey: ["tasks", { page, pageSize }],
     queryFn: async () => {
-      const response = await axiosClient.get<PaginatedResult<TaskResponse>>(
+      const response = await axiosClient.get<PaginatedResult<Task>>(
         `/tasks?size=${pageSize}&page=${page - 1}&sort=createdAt:desc`
       );
       return response.data;

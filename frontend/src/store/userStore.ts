@@ -1,10 +1,10 @@
-import { AuthResponse } from "@/lib/types";
+import { Auth } from "@/lib/types";
 import { create, StateCreator } from "zustand";
 import { persist } from "zustand/middleware";
 
 interface UserState {
-  user: AuthResponse | null;
-  setUser: (user: AuthResponse) => void;
+  user: Auth | null;
+  setUser: (user: Auth) => void;
   clearUser: () => void;
 }
 
