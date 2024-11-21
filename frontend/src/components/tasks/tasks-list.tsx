@@ -1,6 +1,6 @@
 import { PaginatedResult, Task } from "@/lib/types";
 import { Accordion } from "@/components/ui/accordion";
-import TaskItem from "@/components/task-item";
+import TaskItem from "@/components/tasks/task-item";
 import { H2 } from "@/components/typography";
 
 export default function TasksList({ tasks }: { tasks: PaginatedResult<Task> }) {

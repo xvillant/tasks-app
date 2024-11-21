@@ -1,38 +1,22 @@
-import { TasksSkeleton } from "@/components/skeletons";
-import TaskItem from "@/components/task-item";
+import ProfileChart from "@/components/profile/profile-chart";
+import ProfileInfo from "@/components/profile/profile-info";
+import TaskItem from "@/components/tasks/task-item";
 import { H2 } from "@/components/typography";
 import { Accordion } from "@/components/ui/accordion";
 import { Button } from "@/components/ui/button";
-import {
-  ChartConfig,
-  ChartContainer,
-  ChartTooltip,
-  ChartTooltipContent,
-} from "@/components/ui/chart";
 import { Separator } from "@/components/ui/separator";
-import { Skeleton } from "@/components/ui/skeleton";
-import { Table, TableBody, TableCell, TableRow } from "@/components/ui/table";
 import axiosClient from "@/lib/axios";
 import { FILTER_VALUES } from "@/lib/constants";
 import { Task, User, Filter } from "@/lib/types";
-import { formatDate } from "@/lib/utils";
 import { useQuery } from "@tanstack/react-query";
 import clsx from "clsx";
 import { createParser, useQueryState } from "nuqs";
 import { useMemo } from "react";
 import { useParams } from "react-router-dom";
-import { Bar, BarChart, CartesianGrid, XAxis, YAxis } from "recharts";
-
-const chartConfig = {
-  completed: {
-    label: "Completed",
-    color: "#16a34a",
-  },
-  uncompleted: {
-    label: "Uncompleted",
-    color: "#7f1d1d",
-  },
-} satisfies ChartConfig;
+import {
+  ProfileInfoSkeleton,
+  ProfileTasksSkeleton,
+} from "@/components/profile/profile-skeletons";
 
 const parseAsFilter = createParser({
   parse(queryValue) {
@@ -107,7 +91,7 @@ export default function ProfilePage() {
 
   function ProfileTasks() {
     if (isPendingTasks) {
-      return <TasksSkeleton />;
+      return <ProfileTasksSkeleton />;
     }
 
     if (isErrorTasks) {
@@ -168,7 +152,7 @@ export default function ProfilePage() {
 
   function Profile() {
     if (isPendingProfile) {
-      return <Skeleton className="h-4 w-full" />;
+      return <ProfileInfoSkeleton />;
     }
 
     if (isErrorProfile) {
@@ -177,72 +161,8 @@ export default function ProfilePage() {
 
     return (
       <div className="flex flex-col md:flex-row gap-5">
-        <div className="flex-1 flex flex-col gap-5">
-          <H2 className="text-primary">My profile</H2>
-          <Table>
-            <TableBody>
-              <TableRow>
-                <TableCell className="font-bold">Username</TableCell>
-                <TableCell className="text-right">
-                  {dataProfile.username || ""}
-                </TableCell>
-              </TableRow>
-              <TableRow>
-                <TableCell className="font-bold">Firstname</TableCell>
-                <TableCell className="text-right">
-                  {dataProfile.firstName || ""}
-                </TableCell>
-              </TableRow>
-              <TableRow>
-                <TableCell className="font-bold">Lastname</TableCell>
-                <TableCell className="text-right">
-                  {dataProfile.lastName || ""}
-                </TableCell>
-              </TableRow>
-              <TableRow>
-                <TableCell className="font-bold">Email</TableCell>
-                <TableCell className="text-right">
-                  {dataProfile.email || ""}
-                </TableCell>
-              </TableRow>
-              <TableRow>
-                <TableCell className="font-bold">Role</TableCell>
-                <TableCell className="text-right">{dataProfile.role}</TableCell>
-              </TableRow>
-              <TableRow>
-                <TableCell className="font-bold">Created</TableCell>
-                <TableCell className="text-right">
-                  {formatDate(dataProfile.createdAt || "")}
-                </TableCell>
-              </TableRow>
-            </TableBody>
-          </Table>
-        </div>
-        <div className="flex-1">
-          <ChartContainer config={chartConfig}>
-            <BarChart accessibilityLayer data={chartData}>
-              <CartesianGrid vertical={false} />
-              <XAxis
-                dataKey="status"
-                tickLine={false}
-                tickMargin={10}
-                axisLine={false}
-              />
-              <YAxis allowDecimals={false} />
-              <ChartTooltip content={<ChartTooltipContent />} />
-              <Bar
-                dataKey="completed"
-                fill="var(--color-completed)"
-                radius={4}
-              />
-              <Bar
-                dataKey="uncompleted"
-                fill="var(--color-uncompleted)"
-                radius={4}
-              />
-            </BarChart>
-          </ChartContainer>
-        </div>
+        <ProfileInfo dataProfile={dataProfile} />
+        <ProfileChart chartData={chartData} />
       </div>
     );
   }

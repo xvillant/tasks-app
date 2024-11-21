@@ -4,7 +4,7 @@ import NotFoundPage from "@/pages/not-found";
 import HomePage from "@/pages/home";
 import Layout from "@/components/layout";
 import TasksPage from "@/pages/tasks";
-import { ProtectedRoute } from "@/components/protected-route";
+import { ProtectedRoute } from "@/components/auth/protected-route";
 import LoginPage from "@/pages/login";
 import RegisterPage from "@/pages/register";
 import ProfilePage from "@/pages/profile";

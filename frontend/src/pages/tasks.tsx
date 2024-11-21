@@ -1,5 +1,5 @@
-import TaskForm from "@/components/task-form";
-import TasksList from "@/components/tasks-list";
+import TaskForm from "@/components/tasks/task-form";
+import TasksList from "@/components/tasks/tasks-list";
 import Pagination from "@/components/pagination";
 import axiosClient from "@/lib/axios";
 import {
@@ -11,7 +11,7 @@ import { PaginatedResult, Task } from "@/lib/types";
 import { useQuery } from "@tanstack/react-query";
 import PaginationSelect from "@/components/pagination-select";
 import { parseAsInteger, useQueryState } from "nuqs";
-import { TasksSkeleton } from "@/components/skeletons";
+import { TasksSkeleton } from "@/components/tasks/tasks-skeleton";
 import { H2 } from "@/components/typography";
 
 export default function TasksPage() {

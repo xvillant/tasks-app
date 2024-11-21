@@ -1,4 +1,4 @@
-import RegisterForm from "@/components/register-form";
+import RegisterForm from "@/components/auth/register-form";
 import { useUserStore } from "@/store/userStore";
 import { Navigate } from "react-router-dom";
 

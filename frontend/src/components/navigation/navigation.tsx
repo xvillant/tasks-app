@@ -4,8 +4,8 @@ import {
   publicNavigationLinks,
 } from "@/lib/navigation-links";
 import { useUserStore } from "@/store/userStore";
-import LogoutButton from "@/components/logout-button";
-import CustomNavLink from "@/components/custom-navlink";
+import LogoutButton from "@/components/auth/logout-button";
+import CustomNavLink from "@/components/navigation/custom-navlink";
 import { isAdmin } from "@/lib/utils";
 
 export default function Navigation() {

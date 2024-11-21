@@ -3,7 +3,7 @@ import { CalendarCheck, Menu } from "lucide-react";
 
 import { Sheet, SheetTrigger, SheetContent } from "@/components/ui/sheet";
 import { Button } from "@/components/ui/button";
-import Navigation from "@/components/navigation";
+import Navigation from "@/components/navigation/navigation";
 
 export default function Navbar() {
   return (
