@@ -1,7 +1,9 @@
 import { clsx, type ClassValue } from "clsx";
 import { twMerge } from "tailwind-merge";
 import { format } from "date-fns";
-import { Auth, Role, Task } from "@/lib/types";
+import { Auth, Filter, Role, Task } from "@/lib/types";
+import { FILTER_VALUES } from "@/lib/constants";
+import { createParser } from "nuqs";
 
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
@@ -55,3 +57,16 @@ export function isTaskOwner(user: Auth | null, task: Task) {
 
   return user.userId === task.user.id;
 }
+
+export const parseAsFilter = createParser({
+  parse(queryValue) {
+    if (!FILTER_VALUES.includes(queryValue as Filter)) {
+      return null;
+    }
+
+    return queryValue as Filter;
+  },
+  serialize(value: Filter) {
+    return value;
+  },
+});

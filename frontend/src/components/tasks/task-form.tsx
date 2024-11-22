@@ -64,6 +64,7 @@ export default function TaskForm({
   const pageSize = parseInt(
     searchParams.get("size") || PAGINATION_LIMIT.toString()
   );
+  const filter = searchParams.get("filter") || "all";
 
   const form = useForm<TaskFormValues>({
     resolver: zodResolver(TaskFormSchema),
@@ -111,15 +112,17 @@ export default function TaskForm({
         );
         return { previousTasks };
       } else {
-        queryClient.cancelQueries({ queryKey: ["tasks", { page, pageSize }] });
+        queryClient.cancelQueries({
+          queryKey: ["tasks", { page, pageSize, filter }],
+        });
 
         const previousTasks = queryClient.getQueryData<PaginatedResult<Task>>([
           "tasks",
-          { page, pageSize },
+          { page, pageSize, filter },
         ]);
 
         queryClient.setQueryData(
-          ["tasks", { page, pageSize }],
+          ["tasks", { page, pageSize, filter }],
           (old: PaginatedResult<Task> | undefined) => {
             if (!old || !user) return old;
 
@@ -164,7 +167,7 @@ export default function TaskForm({
     onError: (error: AxiosError<ErrorResponse>, _, context) => {
       if (context?.previousTasks) {
         queryClient.setQueryData(
-          ["tasks", { page, pageSize }],
+          ["tasks", { page, pageSize, filter }],
           context.previousTasks
         );
       }
@@ -175,7 +178,7 @@ export default function TaskForm({
     },
     onSuccess: (data: Task) => {
       queryClient.setQueryData(
-        ["tasks", { page, pageSize }],
+        ["tasks", { page, pageSize, filter }],
         (old: PaginatedResult<Task> | undefined) => {
           if (!old) return old;
 
@@ -195,7 +198,7 @@ export default function TaskForm({
       );
 
       queryClient.invalidateQueries({
-        queryKey: ["tasks", { page, pageSize }],
+        queryKey: ["tasks", { page, pageSize, filter }],
       });
 
       setOpen(false);

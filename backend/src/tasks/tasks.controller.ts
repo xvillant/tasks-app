@@ -59,6 +59,7 @@ export class TasksController {
       'description',
       'createdAt',
       'updatedAt',
+      'completed',
       'completedAt',
     ])
     filter?: Filtering,

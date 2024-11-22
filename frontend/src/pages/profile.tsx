@@ -3,33 +3,19 @@ import ProfileInfo from "@/components/profile/profile-info";
 import TaskItem from "@/components/tasks/task-item";
 import { H2 } from "@/components/typography";
 import { Accordion } from "@/components/ui/accordion";
-import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import axiosClient from "@/lib/axios";
-import { FILTER_VALUES } from "@/lib/constants";
-import { Task, User, Filter } from "@/lib/types";
+import { Task, User } from "@/lib/types";
 import { useQuery } from "@tanstack/react-query";
-import clsx from "clsx";
-import { createParser, useQueryState } from "nuqs";
+import { useQueryState } from "nuqs";
 import { useMemo } from "react";
 import { useParams } from "react-router-dom";
 import {
   ProfileInfoSkeleton,
   ProfileTasksSkeleton,
 } from "@/components/profile/profile-skeletons";
-
-const parseAsFilter = createParser({
-  parse(queryValue) {
-    if (!FILTER_VALUES.includes(queryValue as Filter)) {
-      return null;
-    }
-
-    return queryValue as Filter;
-  },
-  serialize(value: Filter) {
-    return value;
-  },
-});
+import { parseAsFilter } from "@/lib/utils";
+import FilteringButtons from "@/components/filtering-buttons";
 
 export default function ProfilePage() {
   const { username } = useParams();
@@ -108,35 +94,7 @@ export default function ProfilePage() {
     return (
       <div className="flex flex-col gap-5">
         <H2 className="text-primary">My tasks</H2>
-        <div className="flex items-center gap-2">
-          <Button
-            className={clsx({
-              "bg-foreground text-background hover:bg-foreground/90":
-                filter === "all",
-            })}
-            onClick={() => setFilter("all")}
-          >
-            All
-          </Button>
-          <Button
-            className={clsx({
-              "bg-foreground text-background hover:bg-foreground/90":
-                filter === "completed",
-            })}
-            onClick={() => setFilter("completed")}
-          >
-            Completed
-          </Button>
-          <Button
-            className={clsx({
-              "bg-foreground text-background hover:bg-foreground/90":
-                filter === "uncompleted",
-            })}
-            onClick={() => setFilter("uncompleted")}
-          >
-            Uncompleted
-          </Button>
-        </div>
+        <FilteringButtons filter={filter} setFilter={setFilter} />
         {filteredTasks!.length <= 0 ? (
           <H2 className="text-center">No tasks available for this filter...</H2>
         ) : (

@@ -34,6 +34,7 @@ export default function TaskItem({ task }: { task: Task }) {
   const pageSize = parseInt(
     searchParams.get("size") || PAGINATION_LIMIT.toString()
   );
+  const filter = searchParams.get("filter") || "all";
 
   const deleteMutation = useMutation({
     mutationKey: ["delete", task.id],
@@ -62,15 +63,17 @@ export default function TaskItem({ task }: { task: Task }) {
         );
         return { previousTasks };
       } else {
-        queryClient.cancelQueries({ queryKey: ["tasks", { page, pageSize }] });
+        queryClient.cancelQueries({
+          queryKey: ["tasks", { page, pageSize, filter }],
+        });
 
         const previousTasks = queryClient.getQueryData<PaginatedResult<Task>>([
           "tasks",
-          { page, pageSize },
+          { page, pageSize, filter },
         ]);
 
         queryClient.setQueryData(
-          ["tasks", { page, pageSize }],
+          ["tasks", { page, pageSize, filter }],
           (old: PaginatedResult<Task> | undefined) => {
             if (!old) return old;
 
@@ -93,7 +96,7 @@ export default function TaskItem({ task }: { task: Task }) {
     onError: (error: AxiosError<ErrorResponse>, _, context) => {
       if (context?.previousTasks) {
         queryClient.setQueryData(
-          ["tasks", { page, pageSize }],
+          ["tasks", { page, pageSize, filter }],
           context.previousTasks
         );
       }
@@ -101,7 +104,7 @@ export default function TaskItem({ task }: { task: Task }) {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({
-        queryKey: ["tasks", { page, pageSize }],
+        queryKey: ["tasks", { page, pageSize, filter }],
       });
       toast({ title: "Successfully deleted task" });
     },
@@ -144,16 +147,16 @@ export default function TaskItem({ task }: { task: Task }) {
         return { previousTasks };
       } else {
         queryClient.cancelQueries({
-          queryKey: ["tasks", { page, pageSize }],
+          queryKey: ["tasks", { page, pageSize, filter }],
         });
 
         const previousTasks = queryClient.getQueryData<PaginatedResult<Task>>([
           "tasks",
-          { page, pageSize },
+          { page, pageSize, filter },
         ]);
 
         queryClient.setQueryData(
-          ["tasks", { page, pageSize }],
+          ["tasks", { page, pageSize, filter }],
           (old: PaginatedResult<Task> | undefined) => {
             if (!old) return old;
 
@@ -180,7 +183,7 @@ export default function TaskItem({ task }: { task: Task }) {
     onError: (error: AxiosError<ErrorResponse>, _, context) => {
       if (context?.previousTasks) {
         queryClient.setQueryData(
-          ["tasks", { page, pageSize }],
+          ["tasks", { page, pageSize, filter }],
           context.previousTasks
         );
       }
@@ -188,7 +191,7 @@ export default function TaskItem({ task }: { task: Task }) {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({
-        queryKey: ["tasks", { page, pageSize }],
+        queryKey: ["tasks", { page, pageSize, filter }],
       });
     },
   });

@@ -13,6 +13,8 @@ import PaginationSelect from "@/components/pagination-select";
 import { parseAsInteger, useQueryState } from "nuqs";
 import { TasksSkeleton } from "@/components/tasks/tasks-skeleton";
 import { H2 } from "@/components/typography";
+import { parseAsFilter } from "@/lib/utils";
+import FilteringButtons from "@/components/filtering-buttons";
 
 export default function TasksPage() {
   const [page, setPage] = useQueryState(
@@ -23,6 +25,10 @@ export default function TasksPage() {
     "size",
     parseAsInteger.withDefault(PAGINATION_LIMIT)
   );
+  const [filter, setFilter] = useQueryState(
+    "filter",
+    parseAsFilter.withDefault("all")
+  );
 
   const {
     data: tasks,
@@ -30,10 +36,18 @@ export default function TasksPage() {
     isError,
     error,
   } = useQuery({
-    queryKey: ["tasks", { page, pageSize }],
+    queryKey: ["tasks", { page, pageSize, filter }],
     queryFn: async () => {
       const response = await axiosClient.get<PaginatedResult<Task>>(
-        `/tasks?size=${pageSize}&page=${page - 1}&sort=createdAt:desc`
+        `/tasks?size=${pageSize}&page=${page - 1}&sort=createdAt:desc${
+          filter === "all"
+            ? ""
+            : `${
+                filter === "completed"
+                  ? "&filter=completed:eq:true"
+                  : "&filter=completed:eq:false"
+              }`
+        }`
       );
       return response.data;
     },
@@ -60,6 +74,11 @@ export default function TasksPage() {
         label="Page size"
         items={PAGINATION_LIMIT_OPTIONS}
         placeholder="Select page size"
+      />
+      <FilteringButtons
+        className="self-end"
+        filter={filter}
+        setFilter={setFilter}
       />
       {isPending ? (
         <TasksSkeleton count={pageSize} />
