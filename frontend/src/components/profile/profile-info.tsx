@@ -6,7 +6,7 @@ import { User } from "@/lib/types";
 export default function ProfileInfo({ dataProfile }: { dataProfile: User }) {
   return (
     <div className="flex-1 flex flex-col gap-5">
-      <H2 className="text-primary">My profile</H2>
+      <H2 className="text-primary">{dataProfile.username}'s profile</H2>
       <Table>
         <TableBody>
           <TableRow>

@@ -1,20 +1,17 @@
 import clsx from "clsx";
-import { Button } from "./ui/button";
+import { Button } from "@/components/ui/button";
 import { Filter } from "@/lib/types";
-import { Options } from "nuqs";
+import useSearchParams from "@/hooks/useSearchParams";
 
 export default function FilteringButtons({
-  filter,
-  setFilter,
+  onFilterChange,
   className,
 }: {
-  filter: Filter;
-  setFilter: (
-    value: Filter | ((old: Filter) => Filter | null) | null,
-    options?: Options
-  ) => Promise<URLSearchParams>;
+  onFilterChange: (value: Filter) => void;
   className?: string;
 }) {
+  const { filter } = useSearchParams();
+
   return (
     <div className={clsx("flex items-center gap-2", className)}>
       <Button
@@ -22,7 +19,7 @@ export default function FilteringButtons({
           "bg-foreground text-background hover:bg-foreground/90":
             filter === "all",
         })}
-        onClick={() => setFilter("all")}
+        onClick={() => onFilterChange("all")}
       >
         All
       </Button>
@@ -31,7 +28,7 @@ export default function FilteringButtons({
           "bg-foreground text-background hover:bg-foreground/90":
             filter === "completed",
         })}
-        onClick={() => setFilter("completed")}
+        onClick={() => onFilterChange("completed")}
       >
         Completed
       </Button>
@@ -40,7 +37,7 @@ export default function FilteringButtons({
           "bg-foreground text-background hover:bg-foreground/90":
             filter === "uncompleted",
         })}
-        onClick={() => setFilter("uncompleted")}
+        onClick={() => onFilterChange("uncompleted")}
       >
         Uncompleted
       </Button>

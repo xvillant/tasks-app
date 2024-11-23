@@ -55,14 +55,14 @@ export default function ProfilePage() {
   const chartData = useMemo(() => {
     return [
       {
-        status: `Status ${dataTasks?.length} of my task${
-          dataTasks?.length === 1 ? "" : "s"
-        }`,
+        status: `Status ${dataTasks?.length} of ${
+          dataProfile?.username
+        }'s task${dataTasks?.length === 1 ? "" : "s"}`,
         completed: dataTasks?.filter((task) => task.completed).length,
         uncompleted: dataTasks?.filter((task) => !task.completed).length,
       },
     ];
-  }, [dataTasks]);
+  }, [dataTasks, dataProfile]);
 
   const filteredTasks = useMemo(() => {
     switch (filter) {
@@ -86,15 +86,15 @@ export default function ProfilePage() {
 
     if (dataTasks.length <= 0) {
       <div className="flex flex-col gap-5">
-        <H2 className="text-primary">My tasks</H2>
+        <H2 className="text-primary">{dataProfile?.username}'s tasks</H2>
         <H2 className="text-center">No tasks available...</H2>;
       </div>;
     }
 
     return (
       <div className="flex flex-col gap-5">
-        <H2 className="text-primary">My tasks</H2>
-        <FilteringButtons filter={filter} setFilter={setFilter} />
+        <H2 className="text-primary">{dataProfile?.username}'s tasks</H2>
+        <FilteringButtons onFilterChange={(value) => setFilter(value)} />
         {filteredTasks!.length <= 0 ? (
           <H2 className="text-center">No tasks available for this filter...</H2>
         ) : (

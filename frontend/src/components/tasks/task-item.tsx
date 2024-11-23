@@ -16,25 +16,17 @@ import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import TaskForm from "@/components/tasks/task-form";
 import DeleteActionAlert from "@/components/tasks/delete-action-alert";
-import { Link, useLocation, useSearchParams } from "react-router-dom";
+import { Link, useLocation } from "react-router-dom";
 import { P, SPAN } from "@/components/typography";
-import { PAGINATION_FIRST_PAGE, PAGINATION_LIMIT } from "@/lib/constants";
+import useSearchParams from "@/hooks/useSearchParams";
 
 export default function TaskItem({ task }: { task: Task }) {
   const user = useUserStore((state) => state.user);
-  const [searchParams] = useSearchParams();
   const { pathname } = useLocation();
+  const { page, pageSize, filter } = useSearchParams();
   const [openAlert, setOpenAlert] = useState(false);
 
   const isProfile = pathname.startsWith("/profile");
-
-  const page = parseInt(
-    searchParams.get("page") || PAGINATION_FIRST_PAGE.toString()
-  );
-  const pageSize = parseInt(
-    searchParams.get("size") || PAGINATION_LIMIT.toString()
-  );
-  const filter = searchParams.get("filter") || "all";
 
   const deleteMutation = useMutation({
     mutationKey: ["delete", task.id],

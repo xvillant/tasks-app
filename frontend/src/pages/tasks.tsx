@@ -4,31 +4,19 @@ import Pagination from "@/components/pagination";
 import axiosClient from "@/lib/axios";
 import {
   PAGINATION_FIRST_PAGE,
-  PAGINATION_LIMIT,
   PAGINATION_LIMIT_OPTIONS,
 } from "@/lib/constants";
-import { PaginatedResult, Task } from "@/lib/types";
+import { Filter, PaginatedResult, Task } from "@/lib/types";
 import { useQuery } from "@tanstack/react-query";
 import PaginationSelect from "@/components/pagination-select";
-import { parseAsInteger, useQueryState } from "nuqs";
 import { TasksSkeleton } from "@/components/tasks/tasks-skeleton";
 import { H2 } from "@/components/typography";
-import { parseAsFilter } from "@/lib/utils";
 import FilteringButtons from "@/components/filtering-buttons";
+import useSearchParams from "@/hooks/useSearchParams";
 
 export default function TasksPage() {
-  const [page, setPage] = useQueryState(
-    "page",
-    parseAsInteger.withDefault(PAGINATION_FIRST_PAGE)
-  );
-  const [pageSize, setPageSize] = useQueryState(
-    "size",
-    parseAsInteger.withDefault(PAGINATION_LIMIT)
-  );
-  const [filter, setFilter] = useQueryState(
-    "filter",
-    parseAsFilter.withDefault("all")
-  );
+  const { page, pageSize, filter, setPage, setFilter, setPageSize } =
+    useSearchParams();
 
   const {
     data: tasks,
@@ -58,6 +46,11 @@ export default function TasksPage() {
     setPageSize(parseInt(value));
   };
 
+  const onFilterChange = (value: Filter) => {
+    setPage(PAGINATION_FIRST_PAGE);
+    setFilter(value);
+  };
+
   if (isError) {
     return <H2 className="text-center">{error.message}</H2>;
   }
@@ -75,11 +68,7 @@ export default function TasksPage() {
         items={PAGINATION_LIMIT_OPTIONS}
         placeholder="Select page size"
       />
-      <FilteringButtons
-        className="self-end"
-        filter={filter}
-        setFilter={setFilter}
-      />
+      <FilteringButtons className="self-end" onFilterChange={onFilterChange} />
       {isPending ? (
         <TasksSkeleton count={pageSize} />
       ) : (

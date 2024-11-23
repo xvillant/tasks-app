@@ -37,6 +37,7 @@ export class TasksService {
     sort?: Sorting,
     filter?: Filtering,
   ): Promise<PaginatedResource<Task>> {
+    // https://dev.to/kogab/how-to-create-paginated-sortable-and-filterable-endpoints-with-nestjs-4bom
     const where = getWhere(filter);
     const order = getOrder(sort);
 
