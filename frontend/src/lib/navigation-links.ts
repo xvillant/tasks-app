@@ -1,10 +1,6 @@
 type NavigationLinkType = { title: string; route: string };
 
-export const publicNavigationLinks: NavigationLinkType[] = [
-  { title: "Home", route: "/" },
-  { title: "Login", route: "/login" },
-  { title: "Register", route: "/register" },
-];
+export const publicNavigationLinks: NavigationLinkType[] = [];
 
 export const authedNavigationLinks: NavigationLinkType[] = [
   { title: "Home", route: "/" },

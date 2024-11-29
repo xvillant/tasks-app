@@ -4,7 +4,7 @@ import {
   publicNavigationLinks,
 } from "@/lib/navigation-links";
 import { useUserStore } from "@/store/userStore";
-import LogoutButton from "@/components/auth/logout-button";
+import SignOutButton from "@/components/auth/signOut-button";
 import CustomNavLink from "@/components/navigation/custom-navlink";
 import { isAdmin } from "@/lib/utils";
 
@@ -27,7 +27,7 @@ export default function Navigation() {
             {link.title}
           </CustomNavLink>
         ))}
-        <LogoutButton />
+        <SignOutButton />
       </>
     );
   }

@@ -5,7 +5,7 @@ export const ProtectedRoute = () => {
   const user = useUserStore((state) => state.user);
 
   if (!user) {
-    return <Navigate to="/login" />;
+    return <Navigate to="/auth" />;
   }
 
   return <Outlet />;

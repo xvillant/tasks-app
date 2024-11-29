@@ -1,8 +1,4 @@
-import {
-  ErrorResponse,
-  RegisterFormSchema,
-  RegisterFormValues,
-} from "@/lib/types";
+import { ErrorResponse, SignUpFormSchema, SignUpFormValues } from "@/lib/types";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -29,17 +25,18 @@ import { useNavigate } from "react-router-dom";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Loader } from "lucide-react";
+import { PasswordInput } from "@/components/ui/password-input";
 
-export default function RegisterForm() {
+export default function SignUpForm() {
   const setUser = useUserStore((state) => state.setUser);
   const navigate = useNavigate();
 
-  const form = useForm<RegisterFormValues>({
-    resolver: zodResolver(RegisterFormSchema),
+  const form = useForm<SignUpFormValues>({
+    resolver: zodResolver(SignUpFormSchema),
     defaultValues: {
       username: "",
       password: "",
-      retypedPassword: "",
+      confirmPassword: "",
       firstName: "",
       lastName: "",
       email: "",
@@ -47,8 +44,8 @@ export default function RegisterForm() {
   });
 
   const mutation = useMutation({
-    mutationKey: ["register"],
-    mutationFn: async (data: RegisterFormValues) => {
+    mutationKey: ["signUp"],
+    mutationFn: async (data: SignUpFormValues) => {
       return await axiosClient.post("/users", data);
     },
     onSuccess: (response) => {
@@ -59,7 +56,7 @@ export default function RegisterForm() {
         username: response.data.username,
       });
       toast({
-        title: "Successfully registered",
+        title: "Successfully signed up",
       });
       navigate("/");
     },
@@ -71,16 +68,18 @@ export default function RegisterForm() {
     },
   });
 
-  const onSubmit = (data: RegisterFormValues) => {
+  const onSubmit = (data: SignUpFormValues) => {
     mutation.mutate(data);
   };
 
   return (
     <Card className="mx-auto max-w-md">
       <CardHeader className="space-y-1">
-        <CardTitle className="text-2xl font-bold">Registration</CardTitle>
-        <CardDescription>
-          Enter your valid credentials to register your account
+        <CardTitle className="text-2xl font-bold text-center">
+          Sign Up
+        </CardTitle>
+        <CardDescription className="text-justify">
+          Enter your valid credentials to sign up your account
         </CardDescription>
       </CardHeader>
       <CardContent>
@@ -91,12 +90,38 @@ export default function RegisterForm() {
           >
             <FormField
               control={form.control}
+              name="firstName"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>First Name</FormLabel>
+                  <FormControl>
+                    <Input placeholder="Type your first name..." {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <FormField
+              control={form.control}
+              name="lastName"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Last Name</FormLabel>
+                  <FormControl>
+                    <Input placeholder="Type your last name..." {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <FormField
+              control={form.control}
               name="username"
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>Username</FormLabel>
                   <FormControl>
-                    <Input placeholder="Username" {...field} />
+                    <Input placeholder="Type your username..." {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -109,7 +134,11 @@ export default function RegisterForm() {
                 <FormItem>
                   <FormLabel>Email</FormLabel>
                   <FormControl>
-                    <Input type="email" placeholder="Email" {...field} />
+                    <Input
+                      type="email"
+                      placeholder="Type your email..."
+                      {...field}
+                    />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -122,22 +151,8 @@ export default function RegisterForm() {
                 <FormItem>
                   <FormLabel>Password</FormLabel>
                   <FormControl>
-                    <Input type="password" placeholder="Password" {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-            <FormField
-              control={form.control}
-              name="retypedPassword"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Retyped Password</FormLabel>
-                  <FormControl>
-                    <Input
-                      type="password"
-                      placeholder="Retyped Password"
+                    <PasswordInput
+                      placeholder="Type your password..."
                       {...field}
                     />
                   </FormControl>
@@ -147,36 +162,25 @@ export default function RegisterForm() {
             />
             <FormField
               control={form.control}
-              name="firstName"
+              name="confirmPassword"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Firstname</FormLabel>
+                  <FormLabel>Confirm Password</FormLabel>
                   <FormControl>
-                    <Input placeholder="Firstname" {...field} />
+                    <PasswordInput
+                      placeholder="Confirm your password..."
+                      {...field}
+                    />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
               )}
             />
-            <FormField
-              control={form.control}
-              name="lastName"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Lastname</FormLabel>
-                  <FormControl>
-                    <Input placeholder="Lastname" {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-
             <Button type="submit" className="w-full col-span-2">
               {mutation.isPending ? (
                 <Loader className="animate-spin" />
               ) : (
-                "Register"
+                "Sign Up"
               )}
             </Button>
           </form>

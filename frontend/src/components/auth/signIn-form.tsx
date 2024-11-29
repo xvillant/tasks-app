@@ -11,7 +11,7 @@ import { Input } from "@/components/ui/input";
 import { zodResolver } from "@hookform/resolvers/zod";
 import axiosClient from "@/lib/axios";
 import { useMutation } from "@tanstack/react-query";
-import { ErrorResponse, LoginFormSchema, LoginFormValues } from "@/lib/types";
+import { ErrorResponse, SignInFormSchema, SignInFormValues } from "@/lib/types";
 import { useUserStore } from "@/store/userStore";
 import { useNavigate } from "react-router-dom";
 import {
@@ -25,12 +25,13 @@ import {
 import { Loader } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { AxiosError } from "axios";
+import { PasswordInput } from "@/components/ui/password-input";
 
-export default function LoginForm() {
+export default function SignInForm() {
   const { toast } = useToast();
 
-  const form = useForm<LoginFormValues>({
-    resolver: zodResolver(LoginFormSchema),
+  const form = useForm<SignInFormValues>({
+    resolver: zodResolver(SignInFormSchema),
     defaultValues: {
       username: "",
       password: "",
@@ -41,14 +42,14 @@ export default function LoginForm() {
   const navigate = useNavigate();
 
   const mutation = useMutation({
-    mutationKey: ["login"],
-    mutationFn: async (data: LoginFormValues) => {
+    mutationKey: ["signIn"],
+    mutationFn: async (data: SignInFormValues) => {
       return await axiosClient.post("/auth/login", data);
     },
     onSuccess: (response) => {
       setUser(response.data);
       toast({
-        title: "Successfully logged in",
+        title: "Successfully signed in",
       });
       navigate("/");
     },
@@ -61,16 +62,18 @@ export default function LoginForm() {
     },
   });
 
-  const onSubmit = (data: LoginFormValues) => {
+  const onSubmit = (data: SignInFormValues) => {
     mutation.mutate(data);
   };
 
   return (
     <Card className="mx-auto max-w-sm">
       <CardHeader className="space-y-1">
-        <CardTitle className="text-2xl font-bold">Login</CardTitle>
-        <CardDescription>
-          Enter your username and password to login to your account
+        <CardTitle className="text-2xl font-bold text-center">
+          Sign In
+        </CardTitle>
+        <CardDescription className="text-justify">
+          Enter your username and password to sign in to your account
         </CardDescription>
       </CardHeader>
       <CardContent>
@@ -83,7 +86,7 @@ export default function LoginForm() {
                 <FormItem>
                   <FormLabel>Username</FormLabel>
                   <FormControl>
-                    <Input placeholder="Username" {...field} />
+                    <Input placeholder="Type your username..." {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -96,7 +99,10 @@ export default function LoginForm() {
                 <FormItem>
                   <FormLabel>Password</FormLabel>
                   <FormControl>
-                    <Input type="password" placeholder="Password" {...field} />
+                    <PasswordInput
+                      placeholder="Type your password..."
+                      {...field}
+                    />
                   </FormControl>
                   <FormMessage />
                 </FormItem>

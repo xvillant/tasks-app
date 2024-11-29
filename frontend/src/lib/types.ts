@@ -52,7 +52,7 @@ export type ErrorResponse = {
   statusCode: number;
 };
 
-export const LoginFormSchema = z.object({
+export const SignInFormSchema = z.object({
   username: z
     .string()
     .min(1, "Username is required")
@@ -63,7 +63,7 @@ export const LoginFormSchema = z.object({
     .min(8, "Password must be at least 8 characters"),
 });
 
-export const RegisterFormSchema = z
+export const SignUpFormSchema = z
   .object({
     username: z
       .string()
@@ -73,10 +73,10 @@ export const RegisterFormSchema = z
       .string()
       .min(1, "Password is required")
       .min(8, "Password must be at least 8 characters"),
-    retypedPassword: z
+    confirmPassword: z
       .string()
-      .min(1, "Retyped password is required")
-      .min(8, "Retyped password must be at least 8 characters"),
+      .min(1, "Confirm password is required")
+      .min(8, "Confirm password must be at least 8 characters"),
     firstName: z
       .string()
       .min(1, "Firstname is required")
@@ -87,7 +87,7 @@ export const RegisterFormSchema = z
       .min(2, "Lastname must be at least 2 characters"),
     email: z.string().email().min(1, "Email is required"),
   })
-  .refine((data) => data.password === data.retypedPassword, {
+  .refine((data) => data.password === data.confirmPassword, {
     message: "Passwords don't match",
     path: ["retypedPassword"],
   });
@@ -100,6 +100,6 @@ export const TaskFormSchema = z.object({
     .min(5, "Description must be at least 5 characters"),
 });
 
-export type RegisterFormValues = z.infer<typeof RegisterFormSchema>;
-export type LoginFormValues = z.infer<typeof LoginFormSchema>;
+export type SignUpFormValues = z.infer<typeof SignUpFormSchema>;
+export type SignInFormValues = z.infer<typeof SignInFormSchema>;
 export type TaskFormValues = z.infer<typeof TaskFormSchema>;

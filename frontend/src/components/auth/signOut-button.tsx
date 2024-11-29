@@ -2,7 +2,7 @@ import { useUserStore } from "@/store/userStore";
 import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
 
-export default function LogoutButton() {
+export default function SignOutButton() {
   const clearUser = useUserStore((state) => state.clearUser);
   const navigate = useNavigate();
 
@@ -10,10 +10,10 @@ export default function LogoutButton() {
     <Button
       onClick={() => {
         clearUser();
-        navigate("/login");
+        navigate("/auth");
       }}
     >
-      Logout
+      Sign Out
     </Button>
   );
 }
