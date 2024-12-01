@@ -18,7 +18,7 @@ export class UsersService {
   ) {}
 
   async create(createUserDto: CreateUserDto) {
-    if (createUserDto.password !== createUserDto.retypedPassword) {
+    if (createUserDto.password !== createUserDto.confirmPassword) {
       throw new BadRequestException('Passwords are not identical');
     }
 
@@ -33,7 +33,7 @@ export class UsersService {
       throw new BadRequestException('Username or email is already taken');
     }
 
-    delete createUserDto['retypedPassword'];
+    delete createUserDto['confirmPassword'];
 
     const user = new User({
       ...createUserDto,

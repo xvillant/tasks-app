@@ -89,7 +89,7 @@ export const SignUpFormSchema = z
   })
   .refine((data) => data.password === data.confirmPassword, {
     message: "Passwords don't match",
-    path: ["retypedPassword"],
+    path: ["confirmPassword"],
   });
 
 export const TaskFormSchema = z.object({

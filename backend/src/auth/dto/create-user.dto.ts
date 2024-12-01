@@ -12,7 +12,7 @@ export class CreateUserDto {
   @IsString()
   @Length(8)
   @IsNotEmpty()
-  retypedPassword: string;
+  confirmPassword: string;
   @IsString()
   @Length(2)
   @IsNotEmpty()
